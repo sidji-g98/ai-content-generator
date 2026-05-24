@@ -3,7 +3,7 @@ import streamlit as st
 import os
 import time
 
-client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
 def generate_content(brand_name, niche, tone, audience, content_type):
     prompt = f"""
