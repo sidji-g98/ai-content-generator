@@ -120,18 +120,27 @@ elif page == "🔍 SEO Keyword Analyzer":
         api_key=os.environ["GEMINI_API_KEY"]
     )
 
-    def get_mock_data():
-        return pd.DataFrame({
-            "Keyword": ["sustainable fashion brands","eco friendly clothing",
-                        "ethical fashion india","organic cotton clothes",
-                        "sustainable wardrobe tips","slow fashion movement",
-                        "recycled fabric clothing","green fashion trends",
-                        "affordable eco fashion","sustainable style guide"],
-            "Clicks": [320,280,210,190,175,160,145,130,120,110],
-            "Impressions": [4200,3800,3100,2900,2600,2400,2100,1900,1800,1600],
-            "CTR": [7.6,7.4,6.8,6.5,6.7,6.7,6.9,6.8,6.7,6.9],
-            "Position": [3.2,3.8,4.1,4.5,4.3,4.6,4.8,5.1,5.3,5.5]
-        })
+    def get_mock_data(niche):
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=f"""Generate 10 realistic SEO keywords for: {niche}
+        Return ONLY a Python list like:
+        ["keyword 1", "keyword 2", "keyword 3", ...]
+        Nothing else."""
+    )
+    import ast
+    keywords = ast.literal_eval(response.text.strip())
+    clicks = [320,280,210,190,175,160,145,130,120,110]
+    impressions = [4200,3800,3100,2900,2600,2400,2100,1900,1800,1600]
+    ctrs = [7.6,7.4,6.8,6.5,6.7,6.7,6.9,6.8,6.7,6.9]
+    positions = [3.2,3.8,4.1,4.5,4.3,4.6,4.8,5.1,5.3,5.5]
+    return pd.DataFrame({
+        "Keyword": keywords,
+        "Clicks": clicks,
+        "Impressions": impressions,
+        "CTR": ctrs,
+        "Position": positions
+    })
 
     def get_ai_suggestions(keywords):
         prompt = f"""You are an SEO expert. Based on these keywords: {', '.join(keywords)}
@@ -154,7 +163,7 @@ elif page == "🔍 SEO Keyword Analyzer":
 
     if st.button("🔍 Analyze Keywords", use_container_width=True):
         if website:
-            df = get_mock_data()
+            df = get_mock_data(website)
             col1, col2, col3, col4 = st.columns(4)
             col1.metric("Total Clicks", f"{df['Clicks'].sum():,}")
             col2.metric("Total Impressions", f"{df['Impressions'].sum():,}")
