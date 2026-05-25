@@ -734,24 +734,24 @@ PLATFORM_BEST_FOR_B: [best platform for variant B]"""
         return "Error: Max retries reached."
     
     def parse_scores(text, prefix):
-    scores = {}
-    metrics = ["CLARITY","EMOTIONAL_APPEAL","URGENCY",
-               "CTA_STRENGTH","RELEVANCE","CULTURAL_FIT","OVERALL"]
-    lines = text.split('\n')
-    for line in lines:
-        line = line.strip()
-        for metric in metrics:
-            key = f"{prefix}_{metric}"
-            if key in line:
-                try:
-                    parts = line.split(":")
-                    if len(parts) >= 2:
-                        score_text = parts[1].strip()
-                        score = float(score_text.split("/")[0].strip())
-                        scores[metric] = score
-                except:
-                    pass
-    return scores
+        scores = {}
+        metrics = ["CLARITY","EMOTIONAL_APPEAL","URGENCY",
+                  "CTA_STRENGTH","RELEVANCE","CULTURAL_FIT","OVERALL"]
+        lines = text.split('\n')
+        for line in lines:
+            line = line.strip()
+            for metric in metrics:
+                key = f"{prefix}_{metric}"
+                if key in line:
+                    try:
+                        parts = line.split(":")
+                        if len(parts) >= 2:
+                            score_text = parts[1].strip()
+                            score = float(score_text.split("/")[0].strip())
+                            scores[metric] = score
+                    except:
+                        pass
+        return scores
 
     def extract_field(text, field):
     lines = text.split('\n')
