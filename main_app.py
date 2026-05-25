@@ -56,7 +56,7 @@ elif page == "🤖 AI Content Generator":
     import time
 
     client = genai.Client(
-        api_key=st.secrets.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
+        api_key=os.environ["GEMINI_API_KEY"]
     )
 
     def generate_content(brand_name, niche, tone, audience, content_type):
@@ -117,7 +117,7 @@ elif page == "🔍 SEO Keyword Analyzer":
     import time
 
     client = genai.Client(
-        api_key=st.secrets.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
+        api_key=os.environ["GEMINI_API_KEY"]
     )
 
     def get_mock_data():
@@ -182,7 +182,7 @@ elif page == "📊 Social Media Dashboard":
     import time
 
     client = genai.Client(
-        api_key=st.secrets.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
+        api_key=os.environ["GEMINI_API_KEY"]
     )
 
     def get_mock_social_data():
@@ -261,7 +261,7 @@ elif page == "🧪 A/B Testing Simulator":
     import time
 
     client = genai.Client(
-        api_key=st.secrets.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
+        api_key=os.environ["GEMINI_API_KEY"]
     )
 
     def analyze_variant(text, content_type):
