@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 
 # ── Page Config ──
 st.set_page_config(
@@ -29,35 +30,26 @@ if page == "🏠 Home":
     st.title("🤖 AI Marketing Suite")
     st.subheader("by Siddharth Ganesh")
     st.divider()
-
     st.markdown("""
     ### Welcome! 👋
-    This is a collection of AI-powered digital marketing tools 
+    This is a collection of AI-powered digital marketing tools
     built using Python and Google Gemini AI.
     """)
-
     col1, col2 = st.columns(2)
-
     with col1:
         st.info("**🤖 AI Content Generator**\n\nGenerate Instagram captions, LinkedIn posts, email copy and more in seconds.")
         st.info("**🔍 SEO Keyword Analyzer**\n\nAnalyze keyword performance and get AI-powered content suggestions.")
-
     with col2:
         st.info("**📊 Social Media Dashboard**\n\nVisualize engagement metrics and get AI weekly performance summaries.")
         st.info("**🧪 A/B Testing Simulator**\n\nCompare two marketing variants and get AI-powered winner predictions.")
-
     st.divider()
     st.success("👈 Select a tool from the sidebar to get started!")
 
 # ── Module 1 ──
 elif page == "🤖 AI Content Generator":
     from google import genai
-    import os
     import time
-
-    client = genai.Client(
-        api_key=os.environ["GEMINI_API_KEY"]
-    )
+    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
     def generate_content(brand_name, niche, tone, audience, content_type):
         prompt = f"""
@@ -88,7 +80,6 @@ elif page == "🤖 AI Content Generator":
     with col2:
         tone = st.selectbox("Tone of Voice", ["Friendly", "Professional", "Witty", "Inspirational"])
         audience = st.text_input("Target Audience", placeholder="e.g. Millennials")
-
     content_type = st.multiselect("What do you want to generate?", [
         "3 Instagram captions with hashtags",
         "1 LinkedIn post",
@@ -96,7 +87,6 @@ elif page == "🤖 AI Content Generator":
         "Blog post outline",
         "3 Google Ad headline variants"
     ])
-
     if st.button("✨ Generate Content", use_container_width=True):
         if brand_name and niche and audience and content_type:
             for item in content_type:
@@ -113,29 +103,26 @@ elif page == "🔍 SEO Keyword Analyzer":
     from google import genai
     import pandas as pd
     import plotly.express as px
-    import os
+    import ast
     import time
-
-    client = genai.Client(
-        api_key=os.environ["GEMINI_API_KEY"]
-    )
+    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
     def get_mock_data(niche):
-        response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=f"Generate 10 realistic SEO keywords for: {niche}. Return ONLY a Python list like: ['keyword 1', 'keyword 2']. Nothing else.")
-    import ast
-    try:
-        keywords = ast.literal_eval(response.text.strip())
-    except:
-        keywords = ["keyword 1","keyword 2","keyword 3","keyword 4","keyword 5","keyword 6","keyword 7","keyword 8","keyword 9","keyword 10"]
-    return pd.DataFrame({
-        "Keyword": keywords[:10],
-        "Clicks": [320,280,210,190,175,160,145,130,120,110],
-        "Impressions": [4200,3800,3100,2900,2600,2400,2100,1900,1800,1600],
-        "CTR": [7.6,7.4,6.8,6.5,6.7,6.7,6.9,6.8,6.7,6.9],
-        "Position": [3.2,3.8,4.1,4.5,4.3,4.6,4.8,5.1,5.3,5.5]
-    })
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=f"Generate 10 realistic SEO keywords for: {niche}. Return ONLY a Python list like: ['keyword 1', 'keyword 2']. Nothing else.")
+            keywords = ast.literal_eval(response.text.strip())
+        except:
+            keywords = ["keyword 1","keyword 2","keyword 3","keyword 4","keyword 5",
+                       "keyword 6","keyword 7","keyword 8","keyword 9","keyword 10"]
+        return pd.DataFrame({
+            "Keyword": keywords[:10],
+            "Clicks": [320,280,210,190,175,160,145,130,120,110],
+            "Impressions": [4200,3800,3100,2900,2600,2400,2100,1900,1800,1600],
+            "CTR": [7.6,7.4,6.8,6.5,6.7,6.7,6.9,6.8,6.7,6.9],
+            "Position": [3.2,3.8,4.1,4.5,4.3,4.6,4.8,5.1,5.3,5.5]
+        })
 
     def get_ai_suggestions(keywords):
         prompt = f"""You are an SEO expert. Based on these keywords: {', '.join(keywords)}
@@ -155,7 +142,6 @@ elif page == "🔍 SEO Keyword Analyzer":
     st.title("🔍 SEO Keyword Analyzer")
     st.divider()
     website = st.text_input("Enter your website/niche", placeholder="e.g. sustainable fashion blog")
-
     if st.button("🔍 Analyze Keywords", use_container_width=True):
         if website:
             df = get_mock_data(website)
@@ -182,12 +168,8 @@ elif page == "📊 Social Media Dashboard":
     from google import genai
     import pandas as pd
     import plotly.express as px
-    import os
     import time
-
-    client = genai.Client(
-        api_key=os.environ["GEMINI_API_KEY"]
-    )
+    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
     def get_mock_social_data():
         return pd.DataFrame({
@@ -217,29 +199,24 @@ elif page == "📊 Social Media Dashboard":
     st.divider()
     platform = st.selectbox("Select Platform",
                              ["All Platforms","Instagram","LinkedIn","Twitter"])
-
     if st.button("📊 Generate Dashboard", use_container_width=True):
         df = get_mock_social_data()
         df["Engagement"] = df["Likes"] + df["Comments"] + df["Shares"]
         df["Engagement_Rate"] = (df["Engagement"] / df["Reach"] * 100).round(2)
         filtered_df = df if platform == "All Platforms" else df[df["Platform"] == platform]
-
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Total Likes", f"{filtered_df['Likes'].sum():,}")
         col2.metric("Total Reach", f"{filtered_df['Reach'].sum():,}")
         col3.metric("Avg Engagement Rate", f"{filtered_df['Engagement_Rate'].mean():.1f}%")
         col4.metric("Total Posts", len(filtered_df))
-
         fig1 = px.line(filtered_df, x="Date", y="Engagement_Rate",
                        color="Platform" if platform == "All Platforms" else None,
                        title="Daily Engagement Rate (%)")
         st.plotly_chart(fig1, use_container_width=True)
-
         post_perf = filtered_df.groupby("Post_Type")["Engagement_Rate"].mean().reset_index()
         fig2 = px.bar(post_perf, x="Post_Type", y="Engagement_Rate",
                       color="Engagement_Rate", color_continuous_scale="Greens")
         st.plotly_chart(fig2, use_container_width=True)
-
         st.divider()
         st.markdown("### AI Weekly Summary")
         metrics = f"Platform: {platform}, Likes: {filtered_df['Likes'].sum()}, Reach: {filtered_df['Reach'].sum()}, Avg Engagement: {filtered_df['Engagement_Rate'].mean():.1f}%"
@@ -261,12 +238,8 @@ elif page == "📊 Social Media Dashboard":
 elif page == "🧪 A/B Testing Simulator":
     from google import genai
     import plotly.graph_objects as go
-    import os
     import time
-
-    client = genai.Client(
-        api_key=os.environ["GEMINI_API_KEY"]
-    )
+    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
     def analyze_variant(text, content_type):
         prompt = f"""Analyze this {content_type}: "{text}"
@@ -308,7 +281,6 @@ elif page == "🧪 A/B Testing Simulator":
     content_type = st.selectbox("What are you testing?", [
         "Email Subject Line","Ad Headline","Call to Action Button",
         "Social Media Caption","Landing Page Headline"])
-
     col1, col2 = st.columns(2)
     with col1:
         st.markdown("**Variant A**")
@@ -328,12 +300,10 @@ elif page == "🧪 A/B Testing Simulator":
                 with st.spinner("Analyzing Variant B..."):
                     analysis_b = analyze_variant(variant_b, content_type)
                 scores_b = parse_scores(analysis_b)
-
             categories = ["Clarity","Emotional Appeal","Urgency","CTA Strength","Relevance"]
             keys = ["CLARITY","EMOTIONAL_APPEAL","URGENCY","CTA_STRENGTH","RELEVANCE"]
             values_a = [scores_a.get(k, 0) for k in keys]
             values_b = [scores_b.get(k, 0) for k in keys]
-
             fig = go.Figure()
             fig.add_trace(go.Scatterpolar(r=values_a+[values_a[0]],
                 theta=categories+[categories[0]], fill='toself',
@@ -343,7 +313,6 @@ elif page == "🧪 A/B Testing Simulator":
                 name='Variant B', line_color='red'))
             fig.update_layout(polar=dict(radialaxis=dict(range=[0,10])))
             st.plotly_chart(fig, use_container_width=True)
-
             col1, col2 = st.columns(2)
             with col1:
                 st.markdown("**Variant A**")
@@ -351,24 +320,4 @@ elif page == "🧪 A/B Testing Simulator":
             with col2:
                 st.markdown("**Variant B**")
                 st.metric("Overall Score", f"{scores_b.get('OVERALL',0)}/10")
-
-            overall_a = scores_a.get('OVERALL', 0)
-            overall_b = scores_b.get('OVERALL', 0)
-            st.divider()
-            if overall_a > overall_b:
-                st.success(f"🏆 Variant A wins with {overall_a}/10 vs {overall_b}/10!")
-            elif overall_b > overall_a:
-                st.success(f"🏆 Variant B wins with {overall_b}/10 vs {overall_a}/10!")
-            else:
-                st.info("🤝 It's a tie!")
-
-            st.divider()
-            col1, col2 = st.columns(2)
-            with col1:
-                st.markdown("**Variant A Analysis**")
-                st.write(analysis_a)
-            with col2:
-                st.markdown("**Variant B Analysis**")
-                st.write(analysis_b)
-        else:
-            st.warning("Please enter both variants!")
+            overall_a = scores
