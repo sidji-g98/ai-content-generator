@@ -370,65 +370,91 @@ elif page == "🔍 SEO Keyword Analyzer":
     from google import genai
     import pandas as pd
     import plotly.express as px
-    import ast
     import time
     client = genai.Client(api_key=GEMINI_API_KEY)
 
-    def get_mock_data(niche):
+    def get_full_seo_analysis(niche):
+        prompt = f"""You are an SEO expert specializing in "{niche}".
+
+Generate a complete SEO analysis with these exact sections:
+
+KEYWORDS:
+List 10 real specific keywords for "{niche}" separated by commas on one line.
+
+BLOG TITLES:
+1. [Real title using actual keywords]
+2. [Real title using actual keywords]
+3. [Real title using actual keywords]
+4. [Real title using actual keywords]
+5. [Real title using actual keywords]
+
+META DESCRIPTIONS:
+1. [Real 150-character meta description]
+2. [Real 150-character meta description]
+3. [Real 150-character meta description]
+
+CONTENT GAPS:
+1. [Specific topic not covered well online]
+2. [Specific topic not covered well online]
+3. [Specific topic not covered well online]
+
+LONG-TAIL KEYWORDS:
+1. [Specific long-tail keyword phrase]
+2. [Specific long-tail keyword phrase]
+
+Use ONLY real keywords related to "{niche}". Never use placeholder text."""
         try:
             response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=f"Generate 10 realistic SEO keywords for: {niche}. Return ONLY a Python list like: ['keyword 1', 'keyword 2']. Nothing else.")
-            keywords = ast.literal_eval(response.text.strip())
-        except:
-            keywords = ["keyword 1","keyword 2","keyword 3","keyword 4","keyword 5",
-                       "keyword 6","keyword 7","keyword 8","keyword 9","keyword 10"]
-        return pd.DataFrame({
-            "Keyword": keywords[:10],
-            "Clicks": [320,280,210,190,175,160,145,130,120,110],
-            "Impressions": [4200,3800,3100,2900,2600,2400,2100,1900,1800,1600],
-            "CTR": [7.6,7.4,6.8,6.5,6.7,6.7,6.9,6.8,6.7,6.9],
-            "Position": [3.2,3.8,4.1,4.5,4.3,4.6,4.8,5.1,5.3,5.5]
-        })
-    def get_ai_suggestions(keywords):
-        prompt = f"""You are an SEO expert. Based on these keywords: {', '.join(keywords)}
-        Provide: 5 Blog titles, 3 Meta descriptions, 3 Content gaps, 2 Long-tail keywords."""
-        for attempt in range(3):
-            try:
-                response = client.models.generate_content(
-                    model="gemini-2.5-flash", contents=prompt)
-                return response.text
-            except Exception as e:
-                if "429" in str(e):
-                    time.sleep(30)
-                elif "quota" in str(e).lower():
-                    time.sleep(30)
-                else:
-                    return f"Error: {str(e)}"
-        return "Error: Max retries reached."
+                model="gemini-2.5-flash", contents=prompt)
+            return response.text
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     st.title("🔍 SEO Keyword Analyzer")
     st.divider()
-    website = st.text_input("Enter your website/niche", placeholder="e.g. sustainable fashion blog")
+    website = st.text_input("Enter your website/niche",
+                             placeholder="e.g. sustainable fashion blog")
+
     if st.button("🔍 Analyze Keywords", use_container_width=True):
         if website:
-            df = get_mock_data(website)
-            col1, col2, col3, col4 = st.columns(4)
-            col1.metric("Total Clicks", f"{df['Clicks'].sum():,}")
-            col2.metric("Total Impressions", f"{df['Impressions'].sum():,}")
-            col3.metric("Avg CTR", f"{df['CTR'].mean():.1f}%")
-            col4.metric("Avg Position", f"{df['Position'].mean():.1f}")
-            fig = px.bar(df.head(8), x="Keyword", y="Clicks", color="CTR",
-                        color_continuous_scale="Blues")
-            fig.update_layout(xaxis_tickangle=-45)
-            st.plotly_chart(fig, use_container_width=True)
-            st.dataframe(df, use_container_width=True)
-            st.divider()
-            st.markdown("### AI Content Suggestions")
-            with st.spinner("Generating suggestions... (waiting for API cooldown)"):
-                    time.sleep(60)
-                    suggestions = get_ai_suggestions(df["Keyword"].tolist())
-            st.write(suggestions)
+            with st.spinner("Generating full SEO analysis..."):
+                full_analysis = get_full_seo_analysis(website)
+
+            if "Error" not in full_analysis:
+                try:
+                    keywords_section = full_analysis.split("KEYWORDS:")[1].split("BLOG TITLES:")[0].strip()
+                    keywords = [k.strip() for k in keywords_section.replace("\n", ",").split(",") if k.strip()][:10]
+                except:
+                    keywords = ["keyword " + str(i) for i in range(1, 11)]
+
+                if len(keywords) < 10:
+                    keywords += ["keyword " + str(i) for i in range(len(keywords)+1, 11)]
+
+                df = pd.DataFrame({
+                    "Keyword": keywords[:10],
+                    "Clicks": [320,280,210,190,175,160,145,130,120,110],
+                    "Impressions": [4200,3800,3100,2900,2600,2400,2100,1900,1800,1600],
+                    "CTR": [7.6,7.4,6.8,6.5,6.7,6.7,6.9,6.8,6.7,6.9],
+                    "Position": [3.2,3.8,4.1,4.5,4.3,4.6,4.8,5.1,5.3,5.5]
+                })
+
+                col1, col2, col3, col4 = st.columns(4)
+                col1.metric("Total Clicks", f"{df['Clicks'].sum():,}")
+                col2.metric("Total Impressions", f"{df['Impressions'].sum():,}")
+                col3.metric("Avg CTR", f"{df['CTR'].mean():.1f}%")
+                col4.metric("Avg Position", f"{df['Position'].mean():.1f}")
+
+                fig = px.bar(df.head(8), x="Keyword", y="Clicks", color="CTR",
+                            color_continuous_scale="Blues")
+                fig.update_layout(xaxis_tickangle=-45)
+                st.plotly_chart(fig, use_container_width=True)
+                st.dataframe(df, use_container_width=True)
+
+                st.divider()
+                st.markdown("### AI Content Suggestions")
+                st.write(full_analysis)
+            else:
+                st.error(full_analysis)
         else:
             st.warning("Please enter your website or niche!")
 
