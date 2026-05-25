@@ -128,6 +128,40 @@ st.markdown("""
     .stSpinner {
         color: #667eea !important;
     }
+/* Fix all text colors */
+    .stApp, .stApp p, .stApp label, .stApp div {
+        color: #1a1a2e !important;
+    }
+
+    /* Fix sidebar text */
+    [data-testid="stSidebar"] * {
+        color: #1a1a2e !important;
+    }
+
+    /* Fix radio buttons in sidebar */
+    [data-testid="stSidebar"] .stRadio label {
+        color: #1a1a2e !important;
+        font-weight: 500;
+    }
+
+    /* Fix input labels */
+    .stTextInput label, .stSelectbox label,
+    .stMultiSelect label, .stTextArea label {
+        color: #1a1a2e !important;
+        font-weight: 600 !important;
+    }
+
+    /* Fix dropdown text */
+    .stSelectbox div[data-baseweb="select"] {
+        color: #1a1a2e !important;
+        background: white !important;
+    }
+
+    /* Fix multiselect */
+    .stMultiSelect div[data-baseweb="select"] {
+        background: white !important;
+        color: #1a1a2e !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 # ── Page Config ──
