@@ -9,6 +9,19 @@ GEMINI_API_KEY = (
 # ── Custom CSS ──
 st.markdown("""
 <style>
+/* ── Progress Bar Text ── */
+    .stProgress > div > div > div > div {
+        color: #1E293B !important;
+    }
+    [data-testid="stProgressBar"] {
+        background: #EEF2FF !important;
+    }
+    .stProgress p {
+        color: #1E293B !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        margin-bottom: 4px !important;
+    }
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap');
 
 * { font-family: 'DM Sans', sans-serif; }
