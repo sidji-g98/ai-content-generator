@@ -3,165 +3,263 @@ import os
 # ── Custom CSS ──
 st.markdown("""
 <style>
-    /* Main background */
-    .stApp {
-        background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
-    }
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap');
 
-    /* Sidebar */
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #ffffff 0%, #f0f4f8 100%);
-        border-right: 2px solid #e0e7ff;
-    }
+* { font-family: 'DM Sans', sans-serif; }
 
-    /* Sidebar title */
-    [data-testid="stSidebar"] h1 {
-        color: #1a1a2e;
-        font-size: 1.3rem !important;
-    }
+/* ── App Background ── */
+.stApp {
+    background: #F7F8FC;
+}
 
-    /* Cards / info boxes */
-    [data-testid="stInfo"] {
-        background: white;
-        border: 1px solid #e0e7ff;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    [data-testid="stInfo"]:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    }
+/* ── Sidebar ── */
+[data-testid="stSidebar"] {
+    background: #FFFFFF;
+    border-right: 1px solid #EAEEF5;
+}
+[data-testid="stSidebar"] .stRadio label {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748B;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 2px 0;
+}
+[data-testid="stSidebar"] .stRadio label:hover {
+    background: #F1F5FF;
+    color: #4338CA;
+}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
+    color: #64748B;
+    font-size: 13px;
+}
+[data-testid="stSidebar"] h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #1E293B !important;
+    letter-spacing: -0.3px;
+}
 
-    /* Buttons */
-    .stButton > button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 10px;
-        padding: 0.6rem 2rem;
-        font-weight: 600;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(102,126,234,0.4);
-    }
-    .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(102,126,234,0.5);
-    }
-    .stButton > button:active {
-        transform: translateY(0px);
-    }
+/* ── Main Content ── */
+.main .block-container {
+    padding: 2rem 2.5rem;
+    animation: fadeUp 0.4s ease forwards;
+}
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
-    /* Input fields */
-    .stTextInput > div > div > input {
-        border-radius: 8px;
-        border: 2px solid #e0e7ff;
-        padding: 0.5rem 1rem;
-        transition: border-color 0.3s ease;
-        background: white;
-    }
-    .stTextInput > div > div > input:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
-    }
+/* ── Headings ── */
+h1 {
+    font-family: 'Space Grotesk', sans-serif !important;
+    font-size: 28px !important;
+    font-weight: 600 !important;
+    color: #1E293B !important;
+    letter-spacing: -0.5px !important;
+    -webkit-text-fill-color: #1E293B !important;
+    margin-bottom: 0.25rem !important;
+}
+h2, h3 {
+    font-family: 'Space Grotesk', sans-serif !important;
+    color: #1E293B !important;
+    font-weight: 500 !important;
+}
 
-    /* Selectbox */
-    .stSelectbox > div > div {
-        border-radius: 8px;
-        border: 2px solid #e0e7ff;
-        background: white;
-        transition: border-color 0.3s ease;
-    }
+/* ── Subheader ── */
+[data-testid="stSubheader"] {
+    color: #64748B !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+}
 
-    /* Metrics */
-    [data-testid="stMetric"] {
-        background: white;
-        border-radius: 12px;
-        padding: 1rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        border-left: 4px solid #667eea;
-        transition: transform 0.2s ease;
-    }
-    [data-testid="stMetric"]:hover {
-        transform: translateY(-2px);
-    }
+/* ── Input Fields ── */
+.stTextInput label, .stSelectbox label,
+.stMultiSelect label, .stTextArea label {
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: #475569 !important;
+    margin-bottom: 4px !important;
+}
+.stTextInput input {
+    border: 1.5px solid #E2E8F0 !important;
+    border-radius: 10px !important;
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    background: #FFFFFF !important;
+    color: #1E293B !important;
+    transition: all 0.2s ease !important;
+}
+.stTextInput input:focus {
+    border-color: #4338CA !important;
+    box-shadow: 0 0 0 3px rgba(67,56,202,0.1) !important;
+}
+.stTextInput input::placeholder { color: #94A3B8 !important; }
 
-    /* Titles */
-    h1 {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-weight: 800 !important;
-    }
+/* ── Select / Dropdown ── */
+[data-baseweb="select"] {
+    border-radius: 10px !important;
+}
+[data-baseweb="select"] > div {
+    border: 1.5px solid #E2E8F0 !important;
+    border-radius: 10px !important;
+    background: #FFFFFF !important;
+    color: #1E293B !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease !important;
+}
+[data-baseweb="select"] > div:focus-within {
+    border-color: #4338CA !important;
+    box-shadow: 0 0 0 3px rgba(67,56,202,0.1) !important;
+}
 
-    /* Divider */
-    hr {
-        border-color: #e0e7ff;
-    }
+/* ── Multiselect ── */
+[data-baseweb="tag"] {
+    background: #EEF2FF !important;
+    border-radius: 6px !important;
+    color: #4338CA !important;
+    font-size: 12px !important;
+}
 
-    /* Success/Warning boxes */
-    [data-testid="stSuccess"] {
-        border-radius: 10px;
-        border: none;
-        background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
-        color: #1a1a2e;
-    }
+/* ── Buttons ── */
+.stButton > button {
+    background: #4338CA !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 12px 24px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    font-family: 'DM Sans', sans-serif !important;
+    letter-spacing: 0.2px !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 12px rgba(67,56,202,0.25) !important;
+}
+.stButton > button:hover {
+    background: #3730A3 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 20px rgba(67,56,202,0.35) !important;
+}
+.stButton > button:active {
+    transform: translateY(0px) !important;
+}
 
-    /* Dataframe */
-    [data-testid="stDataFrame"] {
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    }
+/* ── Metric Cards ── */
+[data-testid="stMetric"] {
+    background: #FFFFFF !important;
+    border: 1px solid #EEF2FF !important;
+    border-radius: 14px !important;
+    padding: 1.25rem !important;
+    border-left: 4px solid #4338CA !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+[data-testid="stMetric"]:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 24px rgba(67,56,202,0.1) !important;
+}
+[data-testid="stMetricLabel"] {
+    font-size: 12px !important;
+    color: #64748B !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+[data-testid="stMetricValue"] {
+    font-family: 'Space Grotesk', sans-serif !important;
+    font-size: 28px !important;
+    font-weight: 600 !important;
+    color: #1E293B !important;
+}
 
-    /* Fade-in animation */
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .main .block-container {
-        animation: fadeIn 0.5s ease forwards;
-    }
+/* ── Info / Success / Warning boxes ── */
+[data-testid="stInfo"] {
+    background: #F8FAFF !important;
+    border: 1px solid #E0E7FF !important;
+    border-radius: 14px !important;
+    color: #1E293B !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+[data-testid="stInfo"]:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 24px rgba(67,56,202,0.08) !important;
+}
+[data-testid="stSuccess"] {
+    background: #F0FDF4 !important;
+    border: 1px solid #BBF7D0 !important;
+    border-radius: 14px !important;
+    color: #166534 !important;
+}
+[data-testid="stWarning"] {
+    background: #FFFBEB !important;
+    border: 1px solid #FDE68A !important;
+    border-radius: 14px !important;
+    color: #92400E !important;
+}
 
-    /* Spinner */
-    .stSpinner {
-        color: #667eea !important;
-    }
-/* Fix all text colors */
-    .stApp, .stApp p, .stApp label, .stApp div {
-        color: #1a1a2e !important;
-    }
+/* ── Divider ── */
+hr {
+    border: none !important;
+    border-top: 1px solid #EEF2FF !important;
+    margin: 1.5rem 0 !important;
+}
 
-    /* Fix sidebar text */
-    [data-testid="stSidebar"] * {
-        color: #1a1a2e !important;
-    }
+/* ── Dataframe ── */
+[data-testid="stDataFrame"] {
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    border: 1px solid #EEF2FF !important;
+}
 
-    /* Fix radio buttons in sidebar */
-    [data-testid="stSidebar"] .stRadio label {
-        color: #1a1a2e !important;
-        font-weight: 500;
-    }
+/* ── Spinner ── */
+.stSpinner > div {
+    border-top-color: #4338CA !important;
+}
 
-    /* Fix input labels */
-    .stTextInput label, .stSelectbox label,
-    .stMultiSelect label, .stTextArea label {
-        color: #1a1a2e !important;
-        font-weight: 600 !important;
-    }
+/* ── Download Button ── */
+.stDownloadButton > button {
+    background: #FFFFFF !important;
+    color: #4338CA !important;
+    border: 1.5px solid #4338CA !important;
+    border-radius: 10px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+}
+.stDownloadButton > button:hover {
+    background: #EEF2FF !important;
+    transform: translateY(-1px) !important;
+}
 
-    /* Fix dropdown text */
-    .stSelectbox div[data-baseweb="select"] {
-        color: #1a1a2e !important;
-        background: white !important;
-    }
+/* ── Plotly Charts ── */
+.js-plotly-plot {
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    border: 1px solid #EEF2FF !important;
+}
 
-    /* Fix multiselect */
-    .stMultiSelect div[data-baseweb="select"] {
-        background: white !important;
-        color: #1a1a2e !important;
-    }
+/* ── Progress Bar ── */
+.stProgress > div > div {
+    background: #4338CA !important;
+    border-radius: 10px !important;
+}
+
+/* ── Text Area ── */
+.stTextArea textarea {
+    border: 1.5px solid #E2E8F0 !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    background: #FFFFFF !important;
+    color: #1E293B !important;
+    transition: all 0.2s ease !important;
+}
+.stTextArea textarea:focus {
+    border-color: #4338CA !important;
+    box-shadow: 0 0 0 3px rgba(67,56,202,0.1) !important;
+}
 </style>
 """, unsafe_allow_html=True)
 # ── Page Config ──
