@@ -123,23 +123,18 @@ elif page == "🔍 SEO Keyword Analyzer":
     def get_mock_data(niche):
         response = client.models.generate_content(
         model="gemini-2.5-flash",
-        contents=f"""Generate 10 realistic SEO keywords for: {niche}
-        Return ONLY a Python list like:
-        ["keyword 1", "keyword 2", "keyword 3", ...]
-        Nothing else."""
-    )
+        contents=f"Generate 10 realistic SEO keywords for: {niche}. Return ONLY a Python list like: ['keyword 1', 'keyword 2']. Nothing else.")
     import ast
-    keywords = ast.literal_eval(response.text.strip())
-    clicks = [320,280,210,190,175,160,145,130,120,110]
-    impressions = [4200,3800,3100,2900,2600,2400,2100,1900,1800,1600]
-    ctrs = [7.6,7.4,6.8,6.5,6.7,6.7,6.9,6.8,6.7,6.9]
-    positions = [3.2,3.8,4.1,4.5,4.3,4.6,4.8,5.1,5.3,5.5]
+    try:
+        keywords = ast.literal_eval(response.text.strip())
+    except:
+        keywords = ["keyword 1","keyword 2","keyword 3","keyword 4","keyword 5","keyword 6","keyword 7","keyword 8","keyword 9","keyword 10"]
     return pd.DataFrame({
-        "Keyword": keywords,
-        "Clicks": clicks,
-        "Impressions": impressions,
-        "CTR": ctrs,
-        "Position": positions
+        "Keyword": keywords[:10],
+        "Clicks": [320,280,210,190,175,160,145,130,120,110],
+        "Impressions": [4200,3800,3100,2900,2600,2400,2100,1900,1800,1600],
+        "CTR": [7.6,7.4,6.8,6.5,6.7,6.7,6.9,6.8,6.7,6.9],
+        "Position": [3.2,3.8,4.1,4.5,4.3,4.6,4.8,5.1,5.3,5.5]
     })
 
     def get_ai_suggestions(keywords):
