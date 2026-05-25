@@ -464,10 +464,27 @@ elif page == "📊 Social Media Dashboard":
     import pandas as pd
     import plotly.express as px
     import time
+    import io
     client = genai.Client(api_key=GEMINI_API_KEY)
 
-    def get_mock_social_data():
-        return pd.DataFrame({
+    st.title("📊 Social Media Dashboard")
+    st.divider()
+
+    # ── Input Method ──
+    st.markdown("### How do you want to add your data?")
+    input_method = st.radio("", [
+        "📊 Use sample data (demo)",
+        "✏️ Enter my own metrics manually",
+        "📁 Upload my CSV file"
+    ], horizontal=True)
+
+    df = None
+
+    # ── Option 1: Sample Data ──
+    if input_method == "📊 Use sample data (demo)":
+        platform_filter = st.selectbox("Select Platform",
+                         ["All Platforms","Instagram","LinkedIn","Twitter"])
+        df = pd.DataFrame({
             "Date": pd.date_range(start="2026-04-01", periods=30, freq="D"),
             "Platform": ["Instagram"]*10 + ["LinkedIn"]*10 + ["Twitter"]*10,
             "Likes": [120,145,98,210,180,95,230,175,160,200,
@@ -489,45 +506,164 @@ elif page == "📊 Social Media Dashboard":
                           "Thread","Image","Thread","Image","Thread",
                           "Image","Thread","Image","Thread","Image"]
         })
+        if platform_filter != "All Platforms":
+            df = df[df["Platform"] == platform_filter]
 
-    st.title("📊 Social Media Dashboard")
-    st.divider()
-    platform = st.selectbox("Select Platform",
-                             ["All Platforms","Instagram","LinkedIn","Twitter"])
-    if st.button("📊 Generate Dashboard", use_container_width=True):
-        df = get_mock_social_data()
-        df["Engagement"] = df["Likes"] + df["Comments"] + df["Shares"]
-        df["Engagement_Rate"] = (df["Engagement"] / df["Reach"] * 100).round(2)
-        filtered_df = df if platform == "All Platforms" else df[df["Platform"] == platform]
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Total Likes", f"{filtered_df['Likes'].sum():,}")
-        col2.metric("Total Reach", f"{filtered_df['Reach'].sum():,}")
-        col3.metric("Avg Engagement Rate", f"{filtered_df['Engagement_Rate'].mean():.1f}%")
-        col4.metric("Total Posts", len(filtered_df))
-        fig1 = px.line(filtered_df, x="Date", y="Engagement_Rate",
-                       color="Platform" if platform == "All Platforms" else None,
-                       title="Daily Engagement Rate (%)")
-        st.plotly_chart(fig1, use_container_width=True)
-        post_perf = filtered_df.groupby("Post_Type")["Engagement_Rate"].mean().reset_index()
-        fig2 = px.bar(post_perf, x="Post_Type", y="Engagement_Rate",
-                      color="Engagement_Rate", color_continuous_scale="Greens")
-        st.plotly_chart(fig2, use_container_width=True)
-        st.divider()
-        st.markdown("### AI Weekly Summary")
-        metrics = f"Platform: {platform}, Likes: {filtered_df['Likes'].sum()}, Reach: {filtered_df['Reach'].sum()}, Avg Engagement: {filtered_df['Engagement_Rate'].mean():.1f}%"
-        with st.spinner("Generating summary..."):
-            for attempt in range(3):
+    # ── Option 2: Manual Entry ──
+    elif input_method == "✏️ Enter my own metrics manually":
+        st.markdown("### Enter Your Social Media Metrics")
+        brand = st.text_input("Brand / Account Name", placeholder="e.g. EcoWear India")
+        platform_filter = st.selectbox("Platform", ["Instagram","LinkedIn","Twitter","Facebook"])
+        col1, col2 = st.columns(2)
+        with col1:
+            total_likes = st.number_input("Total Likes (this week)", min_value=0, value=500)
+            total_comments = st.number_input("Total Comments", min_value=0, value=80)
+            total_shares = st.number_input("Total Shares", min_value=0, value=45)
+        with col2:
+            total_reach = st.number_input("Total Reach", min_value=0, value=8000)
+            total_posts = st.number_input("Number of Posts", min_value=1, value=7)
+            best_post_type = st.selectbox("Best Performing Post Type",
+                ["Reel", "Carousel", "Image", "Video", "Story",
+                 "Article", "Poll", "Thread"])
+
+        if st.button("📊 Generate Dashboard", use_container_width=True):
+            engagement = total_likes + total_comments + total_shares
+            engagement_rate = round((engagement / total_reach * 100), 2) if total_reach > 0 else 0
+
+            col1, col2, col3, col4 = st.columns(4)
+            col1.metric("Total Likes", f"{total_likes:,}")
+            col2.metric("Total Reach", f"{total_reach:,}")
+            col3.metric("Engagement Rate", f"{engagement_rate}%")
+            col4.metric("Total Posts", total_posts)
+
+            fig = px.bar(
+                x=["Likes", "Comments", "Shares"],
+                y=[total_likes, total_comments, total_shares],
+                color=["Likes", "Comments", "Shares"],
+                color_discrete_sequence=["#4338CA", "#818CF8", "#C7D2FE"],
+                title="Engagement Breakdown"
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+            st.divider()
+            st.markdown("### AI Weekly Summary")
+            metrics = f"""
+            Brand: {brand}
+            Platform: {platform_filter}
+            Total Likes: {total_likes}
+            Total Comments: {total_comments}
+            Total Shares: {total_shares}
+            Total Reach: {total_reach}
+            Engagement Rate: {engagement_rate}%
+            Best Post Type: {best_post_type}
+            Total Posts: {total_posts}
+            """
+            with st.spinner("Generating AI summary..."):
                 try:
                     response = client.models.generate_content(
                         model="gemini-2.5-flash",
-                        contents=f"You are a social media expert. Write a weekly performance summary and 3 recommendations based on: {metrics}")
+                        contents=f"""You are a social media expert.
+                        Write a friendly weekly performance summary and
+                        3 specific actionable recommendations based on: {metrics}""")
                     st.write(response.text)
-                    break
+                except Exception as e:
+                    st.error(f"Error: {str(e)}")
+
+        st.stop()
+
+    # ── Option 3: CSV Upload ──
+    elif input_method == "📁 Upload my CSV file":
+        st.markdown("### Upload Your Data")
+        st.info("CSV must have columns: Date, Platform, Likes, Comments, Shares, Reach, Post_Type")
+        uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+        platform_filter = "All Platforms"
+
+        if uploaded_file:
+            df = pd.read_csv(uploaded_file)
+            st.success(f"Loaded {len(df)} rows of data!")
+            platform_options = ["All Platforms"] + df["Platform"].unique().tolist()
+            platform_filter = st.selectbox("Filter by Platform", platform_options)
+            if platform_filter != "All Platforms":
+                df = df[df["Platform"] == platform_filter]
+        else:
+            st.warning("Please upload a CSV file to continue.")
+            st.stop()
+
+    # ── Dashboard (for Sample + CSV) ──
+    if df is not None and input_method != "✏️ Enter my own metrics manually":
+        df["Engagement"] = df["Likes"] + df["Comments"] + df["Shares"]
+        df["Engagement_Rate"] = (df["Engagement"] / df["Reach"] * 100).round(2)
+
+        if st.button("📊 Generate Dashboard", use_container_width=True):
+
+            col1, col2, col3, col4 = st.columns(4)
+            col1.metric("Total Likes", f"{df['Likes'].sum():,}")
+            col2.metric("Total Reach", f"{df['Reach'].sum():,}")
+            col3.metric("Avg Engagement Rate",
+                        f"{df['Engagement_Rate'].mean():.1f}%")
+            col4.metric("Total Posts", len(df))
+
+            st.divider()
+
+            fig1 = px.line(df, x="Date", y="Engagement_Rate",
+                           color="Platform" if "Platform" in df.columns else None,
+                           title="Engagement Rate Over Time",
+                           color_discrete_sequence=["#4338CA","#818CF8","#C7D2FE"])
+            st.plotly_chart(fig1, use_container_width=True)
+
+            if "Post_Type" in df.columns:
+                post_perf = df.groupby("Post_Type")["Engagement_Rate"].mean().reset_index()
+                fig2 = px.bar(post_perf, x="Post_Type", y="Engagement_Rate",
+                              color="Engagement_Rate",
+                              color_continuous_scale="Blues",
+                              title="Avg Engagement Rate by Post Type")
+                st.plotly_chart(fig2, use_container_width=True)
+
+            if "Platform" in df.columns:
+                plat_perf = df.groupby("Platform")[["Likes","Comments","Shares"]].sum().reset_index()
+                fig3 = px.bar(plat_perf, x="Platform",
+                              y=["Likes","Comments","Shares"],
+                              title="Total Engagement by Platform",
+                              barmode="group",
+                              color_discrete_sequence=["#4338CA","#818CF8","#C7D2FE"])
+                st.plotly_chart(fig3, use_container_width=True)
+
+            st.divider()
+            st.markdown("### AI Weekly Summary")
+            metrics = f"""
+            Total Likes: {df['Likes'].sum()}
+            Total Reach: {df['Reach'].sum()}
+            Avg Engagement Rate: {df['Engagement_Rate'].mean():.1f}%
+            Best Post Type: {df.groupby('Post_Type')['Engagement_Rate'].mean().idxmax() if 'Post_Type' in df.columns else 'N/A'}
+            Total Posts: {len(df)}
+            """
+            with st.spinner("Generating AI summary..."):
+                try:
+                    response = client.models.generate_content(
+                        model="gemini-2.5-flash",
+                        contents=f"""You are a social media expert.
+                        Write a weekly performance summary and
+                        3 actionable recommendations based on: {metrics}""")
+                    st.write(response.text)
                 except Exception as e:
                     if "429" in str(e):
                         time.sleep(30)
+                        try:
+                            response = client.models.generate_content(
+                                model="gemini-2.5-flash",
+                                contents=f"Social media summary for: {metrics}")
+                            st.write(response.text)
+                        except:
+                            st.warning("Rate limit hit. Please try again in 1 minute.")
                     else:
-                        raise e
+                        st.error(f"Error: {str(e)}")
+
+            st.download_button(
+                label="📥 Download Report",
+                data=df.to_csv(index=False),
+                file_name="social_media_report.csv",
+                mime="text/csv"
+            )
 
 # ── Module 4 ──
 elif page == "🧪 A/B Testing Simulator":
