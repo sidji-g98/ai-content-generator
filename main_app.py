@@ -732,28 +732,37 @@ PLATFORM_BEST_FOR_B: [best platform for variant B]"""
                 else:
                     return f"Error: {str(e)}"
         return "Error: Max retries reached."
-
+    
     def parse_scores(text, prefix):
-        scores = {}
-        metrics = ["CLARITY","EMOTIONAL_APPEAL","URGENCY",
-                   "CTA_STRENGTH","RELEVANCE","CULTURAL_FIT","OVERALL"]
-        for line in text.split('\n'):
-            for metric in metrics:
-                key = f"{prefix}_{metric}"
-                if line.strip().startswith(key):
-                    try:
-                        scores[metric] = float(
-                            line.split(":")[1].strip().split("/")[0])
-                    except:
-                        scores[metric] = 0
-        return scores
+    scores = {}
+    metrics = ["CLARITY","EMOTIONAL_APPEAL","URGENCY",
+               "CTA_STRENGTH","RELEVANCE","CULTURAL_FIT","OVERALL"]
+    lines = text.split('\n')
+    for line in lines:
+        line = line.strip()
+        for metric in metrics:
+            key = f"{prefix}_{metric}"
+            if key in line:
+                try:
+                    parts = line.split(":")
+                    if len(parts) >= 2:
+                        score_text = parts[1].strip()
+                        score = float(score_text.split("/")[0].strip())
+                        scores[metric] = score
+                except:
+                    pass
+    return scores
 
     def extract_field(text, field):
-        for line in text.split('\n'):
-            if line.strip().startswith(field + ":"):
-                return line.split(":", 1)[1].strip()
-        return ""
-
+    lines = text.split('\n')
+    for line in lines:
+        line = line.strip()
+        if line.startswith(field + ":") or line.startswith(field + " :"):
+            parts = line.split(":", 1)
+            if len(parts) >= 2:
+                return parts[1].strip()
+    return ""
+    
     # ── UI ──
     st.title("🧪 A/B Testing Simulator")
     st.markdown("*Compare any two marketing variants with AI-powered analysis*")
@@ -854,6 +863,8 @@ PLATFORM_BEST_FOR_B: [best platform for variant B]"""
                 )
 
             if "Error" not in analysis:
+                with st.expander("🔍 Raw AI Response (debug)"):
+                    st.text(analysis)
                 scores_a = parse_scores(analysis, "VARIANT_A")
                 scores_b = parse_scores(analysis, "VARIANT_B")
                 winner = extract_field(analysis, "WINNER")
