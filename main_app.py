@@ -732,37 +732,34 @@ PLATFORM_BEST_FOR_B: [best platform for variant B]"""
                 else:
                     return f"Error: {str(e)}"
         return "Error: Max retries reached."
-    
+
     def parse_scores(text, prefix):
         scores = {}
         metrics = ["CLARITY","EMOTIONAL_APPEAL","URGENCY",
-                  "CTA_STRENGTH","RELEVANCE","CULTURAL_FIT","OVERALL"]
+                   "CTA_STRENGTH","RELEVANCE","CULTURAL_FIT","OVERALL"]
         lines = text.split('\n')
         for line in lines:
-            line = line.strip()
+            clean = line.strip().replace("**","").replace("*","")
             for metric in metrics:
                 key = f"{prefix}_{metric}"
-                if key in line:
+                if clean.startswith(key + ":"):
                     try:
-                        parts = line.split(":")
-                        if len(parts) >= 2:
-                            score_text = parts[1].strip()
-                            score = float(score_text.split("/")[0].strip())
-                            scores[metric] = score
+                        score = float(clean.split(":")[1].strip().split("/")[0])
+                        scores[metric] = score
                     except:
                         pass
         return scores
 
     def extract_field(text, field):
-        lines = text.split('\n')
-        for line in lines:
-            line = line.strip()
-            if line.startswith(field + ":") or line.startswith(field + " :"):
-                parts = line.split(":", 1)
+        for line in text.split('\n'):
+            clean = line.strip().replace("**","").replace("*","")
+            if clean.startswith(field + ":"):
+               parts = clean.split(":", 1)
                 if len(parts) >= 2:
                     return parts[1].strip()
         return ""
     
+  
     # ── UI ──
     st.title("🧪 A/B Testing Simulator")
     st.markdown("*Compare any two marketing variants with AI-powered analysis*")
