@@ -1,6 +1,135 @@
 import streamlit as st
 import os
+# ── Custom CSS ──
+st.markdown("""
+<style>
+    /* Main background */
+    .stApp {
+        background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+    }
 
+    /* Sidebar */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #ffffff 0%, #f0f4f8 100%);
+        border-right: 2px solid #e0e7ff;
+    }
+
+    /* Sidebar title */
+    [data-testid="stSidebar"] h1 {
+        color: #1a1a2e;
+        font-size: 1.3rem !important;
+    }
+
+    /* Cards / info boxes */
+    [data-testid="stInfo"] {
+        background: white;
+        border: 1px solid #e0e7ff;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    [data-testid="stInfo"]:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
+    /* Buttons */
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 0.6rem 2rem;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+    }
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102,126,234,0.5);
+    }
+    .stButton > button:active {
+        transform: translateY(0px);
+    }
+
+    /* Input fields */
+    .stTextInput > div > div > input {
+        border-radius: 8px;
+        border: 2px solid #e0e7ff;
+        padding: 0.5rem 1rem;
+        transition: border-color 0.3s ease;
+        background: white;
+    }
+    .stTextInput > div > div > input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
+    }
+
+    /* Selectbox */
+    .stSelectbox > div > div {
+        border-radius: 8px;
+        border: 2px solid #e0e7ff;
+        background: white;
+        transition: border-color 0.3s ease;
+    }
+
+    /* Metrics */
+    [data-testid="stMetric"] {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        border-left: 4px solid #667eea;
+        transition: transform 0.2s ease;
+    }
+    [data-testid="stMetric"]:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Titles */
+    h1 {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800 !important;
+    }
+
+    /* Divider */
+    hr {
+        border-color: #e0e7ff;
+    }
+
+    /* Success/Warning boxes */
+    [data-testid="stSuccess"] {
+        border-radius: 10px;
+        border: none;
+        background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        color: #1a1a2e;
+    }
+
+    /* Dataframe */
+    [data-testid="stDataFrame"] {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    /* Fade-in animation */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .main .block-container {
+        animation: fadeIn 0.5s ease forwards;
+    }
+
+    /* Spinner */
+    .stSpinner {
+        color: #667eea !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 # ── Page Config ──
 st.set_page_config(
     page_title="AI Marketing Suite",
