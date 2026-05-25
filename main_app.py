@@ -424,10 +424,11 @@ elif page == "🔍 SEO Keyword Analyzer":
             st.plotly_chart(fig, use_container_width=True)
             st.dataframe(df, use_container_width=True)
             st.divider()
-            st.markdown("### AI Content Suggestions")
-            with st.spinner("Generating suggestions..."):
-                suggestions = get_ai_suggestions(df["Keyword"].tolist())
-            st.write(suggestions)
+               st.markdown("### AI Content Suggestions")
+               with st.spinner("Generating suggestions... (waiting for API cooldown)"):
+                  time.sleep(15)
+                  suggestions = get_ai_suggestions(df["Keyword"].tolist())
+               st.write(suggestions)
         else:
             st.warning("Please enter your website or niche!")
 
