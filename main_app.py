@@ -390,21 +390,22 @@ elif page == "🔍 SEO Keyword Analyzer":
             "CTR": [7.6,7.4,6.8,6.5,6.7,6.7,6.9,6.8,6.7,6.9],
             "Position": [3.2,3.8,4.1,4.5,4.3,4.6,4.8,5.1,5.3,5.5]
         })
-
     def get_ai_suggestions(keywords):
-        prompt = f"""You are an SEO expert. Based on these keywords: {', '.join(keywords)}
-        Provide: 5 Blog titles, 3 Meta descriptions, 3 Content gaps, 2 Long-tail keywords."""
-        for attempt in range(3):
-            try:
-                response = client.models.generate_content(
-                    model="gemini-2.5-flash", contents=prompt)
-                return response.text
-            except Exception as e:
-                if "429" in str(e):
-                    time.sleep(30)
-                else:
-                    raise e
-        return "Error generating suggestions."
+    prompt = f"""You are an SEO expert. Based on these keywords: {', '.join(keywords)}
+    Provide: 5 Blog titles, 3 Meta descriptions, 3 Content gaps, 2 Long-tail keywords."""
+    for attempt in range(3):
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash", contents=prompt)
+            return response.text
+        except Exception as e:
+            if "429" in str(e):
+                time.sleep(30)
+            elif "quota" in str(e).lower():
+                time.sleep(30)
+            else:
+                return f"Error: {str(e)}"
+    return "Error: Max retries reached."
 
     st.title("🔍 SEO Keyword Analyzer")
     st.divider()
