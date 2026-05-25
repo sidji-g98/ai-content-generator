@@ -754,14 +754,14 @@ PLATFORM_BEST_FOR_B: [best platform for variant B]"""
         return scores
 
     def extract_field(text, field):
-    lines = text.split('\n')
-    for line in lines:
-        line = line.strip()
-        if line.startswith(field + ":") or line.startswith(field + " :"):
-            parts = line.split(":", 1)
-            if len(parts) >= 2:
-                return parts[1].strip()
-    return ""
+        lines = text.split('\n')
+        for line in lines:
+            line = line.strip()
+            if line.startswith(field + ":") or line.startswith(field + " :"):
+                parts = line.split(":", 1)
+                if len(parts) >= 2:
+                    return parts[1].strip()
+        return ""
     
     # ── UI ──
     st.title("🧪 A/B Testing Simulator")
