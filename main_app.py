@@ -121,7 +121,7 @@ elif page == "🔍 SEO Keyword Analyzer":
     )
 
     def get_mock_data(niche):
-    response = client.models.generate_content(
+        response = client.models.generate_content(
         model="gemini-2.5-flash",
         contents=f"""Generate 10 realistic SEO keywords for: {niche}
         Return ONLY a Python list like:
