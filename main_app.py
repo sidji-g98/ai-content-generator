@@ -669,21 +669,58 @@ elif page == "📊 Social Media Dashboard":
 elif page == "🧪 A/B Testing Simulator":
     from google import genai
     import plotly.graph_objects as go
+    import plotly.express as px
     import time
     client = genai.Client(api_key=GEMINI_API_KEY)
 
-    def analyze_variant(text, content_type):
-        prompt = f"""Analyze this {content_type}: "{text}"
-        Score out of 10 for each:
-        CLARITY: X/10
-        EMOTIONAL_APPEAL: X/10
-        URGENCY: X/10
-        CTA_STRENGTH: X/10
-        RELEVANCE: X/10
-        OVERALL: X/10
-        STRENGTHS: strength1 | strength2
-        WEAKNESSES: weakness1 | weakness2
-        SUGGESTION: suggestion here"""
+    def analyze_variants(variant_a, variant_b, content_type, industry,
+                         target_market, audience_age, campaign_goal):
+        prompt = f"""You are a world-class conversion rate optimization expert.
+
+Compare these two {content_type} variants for a {industry} brand:
+
+VARIANT A: "{variant_a}"
+VARIANT B: "{variant_b}"
+
+Context:
+- Target Market: {target_market}
+- Audience Age Group: {audience_age}
+- Campaign Goal: {campaign_goal}
+- Industry: {industry}
+
+Score EACH variant out of 10 for ALL these factors:
+
+VARIANT_A_CLARITY: X/10
+VARIANT_A_EMOTIONAL_APPEAL: X/10
+VARIANT_A_URGENCY: X/10
+VARIANT_A_CTA_STRENGTH: X/10
+VARIANT_A_RELEVANCE: X/10
+VARIANT_A_CULTURAL_FIT: X/10
+VARIANT_A_OVERALL: X/10
+
+VARIANT_B_CLARITY: X/10
+VARIANT_B_EMOTIONAL_APPEAL: X/10
+VARIANT_B_URGENCY: X/10
+VARIANT_B_CTA_STRENGTH: X/10
+VARIANT_B_RELEVANCE: X/10
+VARIANT_B_CULTURAL_FIT: X/10
+VARIANT_B_OVERALL: X/10
+
+WINNER: [A or B]
+WIN_REASON: [2 sentences explaining why]
+
+VARIANT_A_STRENGTHS: strength1 | strength2
+VARIANT_A_WEAKNESSES: weakness1 | weakness2
+VARIANT_A_IMPROVEMENT: one specific improvement
+
+VARIANT_B_STRENGTHS: strength1 | strength2
+VARIANT_B_WEAKNESSES: weakness1 | weakness2
+VARIANT_B_IMPROVEMENT: one specific improvement
+
+RECOMMENDATION: [3-4 sentences of actionable next steps]
+PLATFORM_BEST_FOR_A: [best platform for variant A]
+PLATFORM_BEST_FOR_B: [best platform for variant B]"""
+
         for attempt in range(3):
             try:
                 response = client.models.generate_content(
@@ -693,62 +730,256 @@ elif page == "🧪 A/B Testing Simulator":
                 if "429" in str(e):
                     time.sleep(30)
                 else:
-                    raise e
-        return "Error analyzing."
+                    return f"Error: {str(e)}"
+        return "Error: Max retries reached."
 
-    def parse_scores(text):
+    def parse_scores(text, prefix):
         scores = {}
+        metrics = ["CLARITY","EMOTIONAL_APPEAL","URGENCY",
+                   "CTA_STRENGTH","RELEVANCE","CULTURAL_FIT","OVERALL"]
         for line in text.split('\n'):
-            for metric in ["CLARITY","EMOTIONAL_APPEAL","URGENCY","CTA_STRENGTH","RELEVANCE","OVERALL"]:
-                if line.startswith(metric):
+            for metric in metrics:
+                key = f"{prefix}_{metric}"
+                if line.strip().startswith(key):
                     try:
-                        scores[metric] = float(line.split(":")[1].strip().split("/")[0])
+                        scores[metric] = float(
+                            line.split(":")[1].strip().split("/")[0])
                     except:
                         scores[metric] = 0
         return scores
 
+    def extract_field(text, field):
+        for line in text.split('\n'):
+            if line.strip().startswith(field + ":"):
+                return line.split(":", 1)[1].strip()
+        return ""
+
+    # ── UI ──
     st.title("🧪 A/B Testing Simulator")
+    st.markdown("*Compare any two marketing variants with AI-powered analysis*")
     st.divider()
-    content_type = st.selectbox("What are you testing?", [
-        "Email Subject Line","Ad Headline","Call to Action Button",
-        "Social Media Caption","Landing Page Headline"])
+
+    # ── Context Settings ──
+    st.markdown("### Campaign Context")
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown("**Variant A**")
-        variant_a = st.text_area("Version A", placeholder="e.g. Get 50% off today only!", height=100)
+        industry = st.selectbox("Industry", [
+            "E-commerce / Retail",
+            "Food & Beverage",
+            "Fashion & Apparel",
+            "Technology / SaaS",
+            "Healthcare & Wellness",
+            "Education & EdTech",
+            "Finance & Banking",
+            "Travel & Hospitality",
+            "Real Estate",
+            "Beauty & Personal Care",
+            "Fitness & Sports",
+            "Entertainment & Media"
+        ])
+        target_market = st.selectbox("Target Market", [
+            "India — Tier 1 Cities",
+            "India — Tier 2 & 3 Cities",
+            "India — Pan India",
+            "United States",
+            "United Kingdom",
+            "Southeast Asia",
+            "Middle East",
+            "Europe",
+            "Global / International"
+        ])
     with col2:
-        st.markdown("**Variant B**")
-        variant_b = st.text_area("Version B", placeholder="e.g. Limited time: Half price ends tonight!", height=100)
+        audience_age = st.selectbox("Target Age Group", [
+            "Gen Z (18–24)",
+            "Millennials (25–34)",
+            "Young Professionals (25–40)",
+            "Adults (35–50)",
+            "Senior Adults (50+)",
+            "All Ages"
+        ])
+        campaign_goal = st.selectbox("Campaign Goal", [
+            "Drive Sales / Conversions",
+            "Build Brand Awareness",
+            "Increase Engagement",
+            "Generate Leads",
+            "Customer Retention",
+            "App Downloads",
+            "Website Traffic",
+            "Event Registration"
+        ])
+
+    st.divider()
+
+    # ── Content Type ──
+    st.markdown("### What Are You Testing?")
+    content_type = st.selectbox("Content Type", [
+        "Email Subject Line",
+        "Ad Headline",
+        "Call to Action Button",
+        "Social Media Caption",
+        "Landing Page Headline",
+        "Push Notification",
+        "SMS Message",
+        "WhatsApp Message",
+        "Product Description",
+        "Google Ad Copy",
+        "YouTube Ad Script (first 5 seconds)",
+        "Instagram Bio"
+    ])
+
+    st.divider()
+
+    # ── Variants ──
+    st.markdown("### Enter Your Two Variants")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("**🅐 Variant A**")
+        variant_a = st.text_area("Version A",
+            placeholder="e.g. Get 50% off today only!",
+            height=120)
+    with col2:
+        st.markdown("**🅑 Variant B**")
+        variant_b = st.text_area("Version B",
+            placeholder="e.g. Limited time: Half price ends tonight!",
+            height=120)
+
+    st.divider()
 
     if st.button("🧪 Run A/B Test", use_container_width=True):
         if variant_a and variant_b:
-            col1, col2 = st.columns(2)
-            with col1:
-                with st.spinner("Analyzing Variant A..."):
-                    analysis_a = analyze_variant(variant_a, content_type)
-                scores_a = parse_scores(analysis_a)
-            with col2:
-                with st.spinner("Analyzing Variant B..."):
-                    analysis_b = analyze_variant(variant_b, content_type)
-                scores_b = parse_scores(analysis_b)
-            categories = ["Clarity","Emotional Appeal","Urgency","CTA Strength","Relevance"]
-            keys = ["CLARITY","EMOTIONAL_APPEAL","URGENCY","CTA_STRENGTH","RELEVANCE"]
-            values_a = [scores_a.get(k, 0) for k in keys]
-            values_b = [scores_b.get(k, 0) for k in keys]
-            fig = go.Figure()
-            fig.add_trace(go.Scatterpolar(r=values_a+[values_a[0]],
-                theta=categories+[categories[0]], fill='toself',
-                name='Variant A', line_color='blue'))
-            fig.add_trace(go.Scatterpolar(r=values_b+[values_b[0]],
-                theta=categories+[categories[0]], fill='toself',
-                name='Variant B', line_color='red'))
-            fig.update_layout(polar=dict(radialaxis=dict(range=[0,10])))
-            st.plotly_chart(fig, use_container_width=True)
-            col1, col2 = st.columns(2)
-            with col1:
-                st.markdown("**Variant A**")
-                st.metric("Overall Score", f"{scores_a.get('OVERALL',0)}/10")
-            with col2:
-                st.markdown("**Variant B**")
-                st.metric("Overall Score", f"{scores_b.get('OVERALL',0)}/10")
-            overall_a = scores
+            with st.spinner("Analyzing both variants with AI..."):
+                analysis = analyze_variants(
+                    variant_a, variant_b, content_type,
+                    industry, target_market, audience_age, campaign_goal
+                )
+
+            if "Error" not in analysis:
+                scores_a = parse_scores(analysis, "VARIANT_A")
+                scores_b = parse_scores(analysis, "VARIANT_B")
+                winner = extract_field(analysis, "WINNER")
+                win_reason = extract_field(analysis, "WIN_REASON")
+                recommendation = extract_field(analysis, "RECOMMENDATION")
+                platform_a = extract_field(analysis, "PLATFORM_BEST_FOR_A")
+                platform_b = extract_field(analysis, "PLATFORM_BEST_FOR_B")
+
+                # ── Winner Banner ──
+                st.divider()
+                if "A" in winner:
+                    st.success(f"🏆 **Variant A Wins!** — {win_reason}")
+                elif "B" in winner:
+                    st.success(f"🏆 **Variant B Wins!** — {win_reason}")
+                else:
+                    st.info("🤝 It's a tie! Both variants are equally strong.")
+
+                # ── Score Cards ──
+                st.divider()
+                st.markdown("### Score Comparison")
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.markdown("**🅐 Variant A**")
+                    st.metric("Overall Score",
+                              f"{scores_a.get('OVERALL', 0)}/10")
+                    metrics_labels = {
+                        "CLARITY": "Clarity",
+                        "EMOTIONAL_APPEAL": "Emotional Appeal",
+                        "URGENCY": "Urgency",
+                        "CTA_STRENGTH": "CTA Strength",
+                        "RELEVANCE": "Relevance",
+                        "CULTURAL_FIT": "Cultural Fit"
+                    }
+                    for key, label in metrics_labels.items():
+                        score = scores_a.get(key, 0)
+                        st.progress(score/10,
+                                   text=f"{label}: {score}/10")
+                with col2:
+                    st.markdown("**🅑 Variant B**")
+                    st.metric("Overall Score",
+                              f"{scores_b.get('OVERALL', 0)}/10")
+                    for key, label in metrics_labels.items():
+                        score = scores_b.get(key, 0)
+                        st.progress(score/10,
+                                   text=f"{label}: {score}/10")
+
+                # ── Radar Chart ──
+                st.divider()
+                st.markdown("### Visual Comparison")
+                categories = ["Clarity", "Emotional Appeal", "Urgency",
+                              "CTA Strength", "Relevance", "Cultural Fit"]
+                keys = ["CLARITY","EMOTIONAL_APPEAL","URGENCY",
+                        "CTA_STRENGTH","RELEVANCE","CULTURAL_FIT"]
+                values_a = [scores_a.get(k, 0) for k in keys]
+                values_b = [scores_b.get(k, 0) for k in keys]
+
+                fig = go.Figure()
+                fig.add_trace(go.Scatterpolar(
+                    r=values_a + [values_a[0]],
+                    theta=categories + [categories[0]],
+                    fill='toself', name='Variant A',
+                    line_color='#4338CA',
+                    fillcolor='rgba(67,56,202,0.15)'))
+                fig.add_trace(go.Scatterpolar(
+                    r=values_b + [values_b[0]],
+                    theta=categories + [categories[0]],
+                    fill='toself', name='Variant B',
+                    line_color='#EC4899',
+                    fillcolor='rgba(236,72,153,0.15)'))
+                fig.update_layout(
+                    polar=dict(radialaxis=dict(range=[0,10])),
+                    showlegend=True,
+                    height=450
+                )
+                st.plotly_chart(fig, use_container_width=True)
+
+                # ── Bar Chart Comparison ──
+                comparison_df = {
+                    "Metric": categories * 2,
+                    "Score": values_a + values_b,
+                    "Variant": ["Variant A"] * 6 + ["Variant B"] * 6
+                }
+                fig2 = px.bar(comparison_df, x="Metric", y="Score",
+                              color="Variant", barmode="group",
+                              color_discrete_sequence=["#4338CA","#EC4899"],
+                              title="Side-by-Side Score Breakdown")
+                st.plotly_chart(fig2, use_container_width=True)
+
+                # ── Detailed Analysis ──
+                st.divider()
+                st.markdown("### Detailed Analysis")
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.markdown("**🅐 Variant A**")
+                    strengths_a = extract_field(analysis, "VARIANT_A_STRENGTHS")
+                    weaknesses_a = extract_field(analysis, "VARIANT_A_WEAKNESSES")
+                    improvement_a = extract_field(analysis, "VARIANT_A_IMPROVEMENT")
+                    if strengths_a:
+                        st.success(f"✅ **Strengths:** {strengths_a}")
+                    if weaknesses_a:
+                        st.warning(f"⚠️ **Weaknesses:** {weaknesses_a}")
+                    if improvement_a:
+                        st.info(f"💡 **Improvement:** {improvement_a}")
+                    if platform_a:
+                        st.markdown(f"📱 **Best Platform:** {platform_a}")
+                with col2:
+                    st.markdown("**🅑 Variant B**")
+                    strengths_b = extract_field(analysis, "VARIANT_B_STRENGTHS")
+                    weaknesses_b = extract_field(analysis, "VARIANT_B_WEAKNESSES")
+                    improvement_b = extract_field(analysis, "VARIANT_B_IMPROVEMENT")
+                    if strengths_b:
+                        st.success(f"✅ **Strengths:** {strengths_b}")
+                    if weaknesses_b:
+                        st.warning(f"⚠️ **Weaknesses:** {weaknesses_b}")
+                    if improvement_b:
+                        st.info(f"💡 **Improvement:** {improvement_b}")
+                    if platform_b:
+                        st.markdown(f"📱 **Best Platform:** {platform_b}")
+
+                # ── Recommendation ──
+                if recommendation:
+                    st.divider()
+                    st.markdown("### AI Recommendation")
+                    st.info(f"🎯 {recommendation}")
+
+            else:
+                st.error(analysis)
+        else:
+            st.warning("Please enter both variants!")
