@@ -1,5 +1,11 @@
 import streamlit as st
 import os
+
+GEMINI_API_KEY = (
+    st.secrets.get("GEMINI_API_KEY") 
+    or os.environ.get("GEMINI_API_KEY") 
+    or ""
+)
 # ── Custom CSS ──
 st.markdown("""
 <style>
@@ -310,7 +316,7 @@ if page == "🏠 Home":
 elif page == "🤖 AI Content Generator":
     from google import genai
     import time
-    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+    client = genai.Client(api_key=GEMINI_API_KEY)
 
     def generate_content(brand_name, niche, tone, audience, content_type):
         prompt = f"""
@@ -366,7 +372,7 @@ elif page == "🔍 SEO Keyword Analyzer":
     import plotly.express as px
     import ast
     import time
-    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+    client = genai.Client(api_key=GEMINI_API_KEY)
 
     def get_mock_data(niche):
         try:
@@ -430,7 +436,7 @@ elif page == "📊 Social Media Dashboard":
     import pandas as pd
     import plotly.express as px
     import time
-    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+    client = genai.Client(api_key=GEMINI_API_KEY)
 
     def get_mock_social_data():
         return pd.DataFrame({
@@ -500,7 +506,7 @@ elif page == "🧪 A/B Testing Simulator":
     from google import genai
     import plotly.graph_objects as go
     import time
-    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+    client = genai.Client(api_key=GEMINI_API_KEY)
 
     def analyze_variant(text, content_type):
         prompt = f"""Analyze this {content_type}: "{text}"
