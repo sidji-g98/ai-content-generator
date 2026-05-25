@@ -895,31 +895,68 @@ PLATFORM_BEST_FOR_B: [best platform for variant B]"""
                 # ── Score Cards ──
                 st.divider()
                 st.markdown("### Score Comparison")
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.markdown("**🅐 Variant A**")
-                    st.metric("Overall Score",
-                              f"{scores_a.get('OVERALL', 0)}/10")
-                    metrics_labels = {
-                        "CLARITY": "Clarity",
-                        "EMOTIONAL_APPEAL": "Emotional Appeal",
-                        "URGENCY": "Urgency",
-                        "CTA_STRENGTH": "CTA Strength",
-                        "RELEVANCE": "Relevance",
-                        "CULTURAL_FIT": "Cultural Fit"
-                    }
-                    for key, label in metrics_labels.items():
-                        score = scores_a.get(key, 0)
-                        st.progress(score/10,
-                                   text=f"{label}: {score}/10")
-                with col2:
-                    st.markdown("**🅑 Variant B**")
-                    st.metric("Overall Score",
-                              f"{scores_b.get('OVERALL', 0)}/10")
-                    for key, label in metrics_labels.items():
-                        score = scores_b.get(key, 0)
-                        st.progress(score/10,
-                                   text=f"{label}: {score}/10")
+
+                metrics_labels = {
+                    "CLARITY": "Clarity",
+                    "EMOTIONAL_APPEAL": "Emotional Appeal",
+                    "URGENCY": "Urgency",
+                    "CTA_STRENGTH": "CTA Strength",
+                    "RELEVANCE": "Relevance",
+                    "CULTURAL_FIT": "Cultural Fit",
+                    "OVERALL": "Overall"
+                }
+
+                table_html = """
+                <table style="width:100%; border-collapse:collapse; font-family:'DM Sans',sans-serif;">
+                    <thead>
+                        <tr style="background:#4338CA; color:white;">
+                            <th style="padding:12px 16px; text-align:left; border-radius:8px 0 0 0;">Metric</th>
+                            <th style="padding:12px 16px; text-align:center;">🅐 Variant A</th>
+                            <th style="padding:12px 16px; text-align:center; border-radius:0 8px 0 0;">🅑 Variant B</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                """
+
+                for i, (key, label) in enumerate(metrics_labels.items()):
+                    score_a = scores_a.get(key, 0)
+                    score_b = scores_b.get(key, 0)
+                    bg = "#F8FAFF" if i % 2 == 0 else "#FFFFFF"
+
+                    if key == "OVERALL":
+                        row_style = "font-weight:600; background:#EEF2FF;"
+                    else:
+                        row_style = f"background:{bg};"
+
+                    if score_a > score_b:
+                        color_a = "#166534"
+                        color_b = "#991B1B"
+                        icon_a = "✅"
+                        icon_b = ""
+                    elif score_b > score_a:
+                        color_a = "#991B1B"
+                        color_b = "#166534"
+                        icon_a = ""
+                        icon_b = "✅"
+                    else:
+                        color_a = color_b = "#1E293B"
+                        icon_a = icon_b = "="
+
+                    table_html += f"""
+                        <tr style="{row_style}">
+                            <td style="padding:10px 16px; color:#475569; border-bottom:1px solid #EEF2FF;">{label}</td>
+                            <td style="padding:10px 16px; text-align:center; color:{color_a}; border-bottom:1px solid #EEF2FF;">
+                                {icon_a} <strong>{score_a}/10</strong>
+                            </td>
+                            <td style="padding:10px 16px; text-align:center; color:{color_b}; border-bottom:1px solid #EEF2FF;">
+                                {icon_b} <strong>{score_b}/10</strong>
+                            </td>
+                        </tr>
+                    """
+
+                table_html += "</tbody></table>"
+                st.markdown(table_html, unsafe_allow_html=True)
+                
 
                 # ── Radar Chart ──
                 st.divider()
