@@ -755,7 +755,7 @@ PLATFORM_BEST_FOR_B: [best platform for variant B]"""
             clean = line.strip().replace("**","").replace("*","")
             if clean.startswith(field + ":"):
                parts = clean.split(":", 1)
-                if len(parts) >= 2:
+               if len(parts) >= 2:
                     return parts[1].strip()
         return ""
     
