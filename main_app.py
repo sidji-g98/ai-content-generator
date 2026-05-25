@@ -426,7 +426,7 @@ elif page == "🔍 SEO Keyword Analyzer":
             st.divider()
             st.markdown("### AI Content Suggestions")
             with st.spinner("Generating suggestions... (waiting for API cooldown)"):
-                    time.sleep(30)
+                    time.sleep(60)
                     suggestions = get_ai_suggestions(df["Keyword"].tolist())
             st.write(suggestions)
         else:
